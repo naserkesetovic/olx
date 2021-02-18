@@ -1,3 +1,8 @@
+import requests
+
+import konfiguracija
+import razno
+
 class Artikal(object):
     ''' OLX definisani artikal, s dodatnim poljima poput parsirane cijene, timestampa '''
     def __init__(self, id, naslov, ima_dostavu, slika, cijena, kategorija, timestamp, izdvojen, istakni, hitno, novo, vidljiv, radnja, vrsta_prodaje, kolicina, prikazi_kolicinu, podrzava_kolicinu, besplatna_dostava):
@@ -22,6 +27,23 @@ class Artikal(object):
         self.prikazi_kolicinu = self.__parse_boolean(prikazi_kolicinu)
         self.podrzava_kolicinu = self.__parse_boolean(podrzava_kolicinu)
         self.besplatna_dostava = self.__parse_boolean(besplatna_dostava)
+
+    def info(self):
+        q = "artikli/{0}/".format(self.id)
+        razno.log(konfiguracija.url.format(q))
+        r = requests.get(konfiguracija.url.format(q))
+
+        r.raise_for_status()
+
+        if r.status_code == 200:
+            #razno.log(r.json())
+            self.__parse_article(r.json())
+        else:
+            raise greske.ServerUnavailableError
+            return None
+    @staticmethod
+    def __parse_article(j):
+        return None
 
     @staticmethod
     def __parse_price(cijena):

@@ -10,7 +10,7 @@ import razno
 
 from artikal import Artikal
 from kategorije import Kategorija, Kategorije
-from pretraga import SORT_ORDER, SORT_AT, Pretraga
+from pretraga import SORT_ORDER, SORT_AT, VRSTA, STANJE, Pretraga
 
 class olx(object):
     def __init__(self):
@@ -30,7 +30,7 @@ class olx(object):
             return None
 
         return Kategorije(results)
-        
+
     def __sve_kategorije(self, kategorije):
         results = []
         for k in kategorije:
@@ -45,12 +45,45 @@ class olx(object):
 
         return results
 
-    def trazi(self, q, sort_order : SORT_ORDER = SORT_ORDER.DESC, sort_po : SORT_AT = SORT_AT.DATUM, stranica = 1):
-        q = "artikli?trazilica={0}&sort_order={1}&sort_po={2}&stranica={3}".format(quote(q), sort_order.value, sort_po.value, stranica)
+    def trazi(self,
+        sta,
+        sort_order : SORT_ORDER = SORT_ORDER.DESC,
+        sort_po : SORT_AT = SORT_AT.DATUM,
+        stanje : STANJE = STANJE.SVE,
+        vrsta : VRSTA = VRSTA.SVE,
+        besplatnadostava = "ne",
+        od = 0,
+        do = 0,
+        stranica = 1):
+        q = ("artikli?trazilica={0}"
+        "&sort_order={1}"
+        "&sort_po={2}"
+        "&vrsta={3}"
+        "&stanje={4}"
+        "&stranica={5}").format(
+            quote(sta),
+            sort_order.value,
+            sort_po.value,
+            vrsta.value,
+            stanje.value,
+            stranica)
 
+        if besplatnadostava == "da":
+            q += "&besplatnadostava=besplatnadostava"
+
+        if isinstance(od, int):
+            if int(od) >= 0:
+                q += "&od={0}".format(od)
+
+        if isinstance(do, int):
+            if int(do) >= 0:
+                q += "&do={0}".format(do)
+
+        razno.log("String: {0}".format(q))
         r = requests.get(konfiguracija.url.format(q))
 
         r.raise_for_status()
+        # TODO: status kod
         j = r.json()
 
         articles = self.__artikli(j.get('artikli'))
